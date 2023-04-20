@@ -1,0 +1,20 @@
+[package]
+name = "xwrapup_rs"
+version = "0.1.1"
+authors = ["W-Mai <1341398182@qq.com>"]
+edition = "2021"
+categories = ["wasm", "no-std", "gui"]
+description = "This is a Rust binding for xWrapUp library."
+license = "MIT"
+repository = "https://github.com/W-Mai/xwrapup_rs"
+
+[features]
+
+[dependencies]
+
+[profile.dev]
+panic = "abort" # 禁用panic时栈展开
+
+[profile.release]
+panic = "abort" # 禁用panic时栈展开
+opt-level = "s"
