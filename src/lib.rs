@@ -28,6 +28,8 @@ pub mod xwu {
         fn obj_set_attr(obj: u64, tid: ObjAttr, res: *mut u8, par: ...) -> i32;
     }
 
+    use crate::ptr;
+
     #[repr(i32)]
     #[derive(Debug, Clone, Copy)]
     enum ErrorCode {
@@ -78,25 +80,25 @@ pub mod xwu {
 
         pub fn get_width(&self) -> i32 {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::Width, &mut res as *mut i32 as *mut u8); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::Width, ptr!(res)); }
             res
         }
 
-        pub fn get_height(&self) -> i32 {
+        pub fn get_height(&self) -> CoordType {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::Height, &mut res as *mut i32 as *mut u8); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::Height, ptr!(res)); }
             res
         }
 
         pub fn get_x(&self) -> i32 {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::X, &mut res as *mut i32 as *mut u8); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::X, ptr!(res)); }
             res
         }
 
         pub fn get_y(&self) -> i32 {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::Y, &mut res as *mut i32 as *mut u8); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::Y, ptr!(res)); }
             res
         }
 
@@ -151,6 +153,12 @@ pub mod log {
     }
 }
 
+pub mod utils {
+    #[macro_export]
+    macro_rules! ptr {
+        ($p:ident) => { (&mut $p as * mut _ as * mut u8) };
+    }
+}
 
 #[cfg(test)]
 mod tests {
