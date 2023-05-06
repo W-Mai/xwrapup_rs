@@ -1,3 +1,4 @@
+#![feature(default_free_fn)]
 #![no_std]
 
 #[allow(dead_code)]
@@ -10,6 +11,7 @@ extern "C" {
 
 #[allow(dead_code)]
 pub mod xwu {
+    use core::default::default;
     use core::ptr::null_mut;
 
 
@@ -22,12 +24,13 @@ pub mod xwu {
         fn obj_destroy(oid: IObjType, obj: u64) -> u64;
 
         #[link_name = "wu_obj_get_attr"] // ErrorCode wu_obj_get_attr(void *obj, id_type_t type, void *res, ...);
-        fn obj_get_attr(obj: u64, tid: ObjAttr, res: *mut u8, par: ...) -> i32;
+        fn obj_get_attr(obj: u64, tid: ObjAttr, res: *mut u8, par: *const u8) -> i32;
 
         #[link_name = "wu_obj_set_attr"] // ErrorCode wu_obj_set_attr(void *obj, id_type_t type, void *res, ...);
-        fn obj_set_attr(obj: u64, tid: ObjAttr, res: *mut u8, par: ...) -> i32;
+        fn obj_set_attr(obj: u64, tid: ObjAttr, res: *mut u8, par: *const u8) -> i32;
     }
 
+    pub use i32 as CoordType;
     use crate::ptr;
 
     #[repr(i32)]
@@ -52,6 +55,50 @@ pub mod xwu {
         Height = 151,
         X = 152,
         Y = 153,
+        Coords = 154,
+        OriCoords = 155,
+        Rect = 156,
+        ScrollCoords = 157,
+        ScrollLeft = 158,
+        ScrollTop = 159,
+        ScrollRight = 160,
+        ScrollBottom = 161,
+    }
+
+    #[repr(C)]
+    pub struct PosType {
+        x: CoordType,
+        y: CoordType,
+    }
+
+    #[repr(C)]
+    pub struct SizeType {
+        w: CoordType,
+        h: CoordType,
+    }
+
+    #[repr(C)]
+    pub struct RectType {
+        x0: CoordType,
+        y0: CoordType,
+        x1: CoordType,
+        y1: CoordType,
+    }
+
+    #[repr(C)]
+    pub struct RectSizeType {
+        x: CoordType,
+        y: CoordType,
+        w: CoordType,
+        h: CoordType,
+    }
+
+    #[repr(C)]
+    pub struct BoxType {
+        left: CoordType,
+        top: CoordType,
+        right: CoordType,
+        bottom: CoordType,
     }
 
     pub struct Obj {
@@ -78,44 +125,52 @@ pub mod xwu {
             unsafe { obj_destroy(self.oid, self.obj); }
         }
 
-        pub fn get_width(&self) -> i32 {
+        pub fn get_width(&self) -> CoordType {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::Width, ptr!(res)); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::Width, ptr!(res), &default()); }
             res
         }
 
         pub fn get_height(&self) -> CoordType {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::Height, ptr!(res)); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::Height, ptr!(res), &default()); }
             res
         }
 
-        pub fn get_x(&self) -> i32 {
+        pub fn get_x(&self) -> CoordType {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::X, ptr!(res)); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::X, ptr!(res), &default()); }
             res
         }
 
-        pub fn get_y(&self) -> i32 {
+        pub fn get_y(&self) -> CoordType {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::Y, ptr!(res)); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::Y, ptr!(res), &default()); }
             res
         }
 
-        pub fn set_width(&self, width: i32) {
-            unsafe { obj_set_attr(self.obj, ObjAttr::Width, null_mut(), width); }
+        pub fn set_width(&self, width: CoordType) {
+            unsafe {
+                obj_set_attr(self.obj, ObjAttr::Width, null_mut(), ptr!([width, ]));
+            }
         }
 
-        pub fn set_height(&self, height: i32) {
-            unsafe { obj_set_attr(self.obj, ObjAttr::Height, null_mut(), height); }
+        pub fn set_height(&self, height: CoordType) {
+            unsafe {
+                obj_set_attr(self.obj, ObjAttr::Height, null_mut(), ptr!([height, ]));
+            }
         }
 
-        pub fn set_x(&self, x: i32) {
-            unsafe { obj_set_attr(self.obj, ObjAttr::X, null_mut(), x); }
+        pub fn set_x(&self, x: CoordType) {
+            unsafe {
+                obj_set_attr(self.obj, ObjAttr::X, null_mut(), ptr!([x, ]));
+            }
         }
 
-        pub fn set_y(&self, y: i32) {
-            unsafe { obj_set_attr(self.obj, ObjAttr::Y, null_mut(), y); }
+        pub fn set_y(&self, y: CoordType) {
+            unsafe {
+                obj_set_attr(self.obj, ObjAttr::Y, null_mut(), ptr!([y, ]));
+            }
         }
     }
 }
@@ -156,7 +211,7 @@ pub mod log {
 pub mod utils {
     #[macro_export]
     macro_rules! ptr {
-        ($p:ident) => { (&mut $p as * mut _ as * mut u8) };
+        ($p:expr) => { (&mut $p as * mut _ as * mut u8) };
     }
 }
 
