@@ -1,4 +1,3 @@
-#![feature(default_free_fn)]
 #![no_std]
 
 #[allow(dead_code)]
@@ -11,7 +10,6 @@ extern "C" {
 
 #[allow(dead_code)]
 pub mod xwu {
-    use core::default::default;
     use core::ptr::null_mut;
 
 
@@ -30,7 +28,8 @@ pub mod xwu {
         fn obj_set_attr(obj: u64, tid: ObjAttr, res: *mut u8, par: *const u8) -> i32;
     }
 
-    pub use i32 as CoordType;
+    pub type CoordType = i32;
+
     use crate::ptr;
 
     #[repr(i32)]
@@ -66,18 +65,21 @@ pub mod xwu {
     }
 
     #[repr(C)]
+    #[derive(Debug, Clone, Copy, Default)]
     pub struct PosType {
         x: CoordType,
         y: CoordType,
     }
 
     #[repr(C)]
+    #[derive(Debug, Clone, Copy, Default)]
     pub struct SizeType {
         w: CoordType,
         h: CoordType,
     }
 
     #[repr(C)]
+    #[derive(Debug, Clone, Copy, Default)]
     pub struct RectType {
         x0: CoordType,
         y0: CoordType,
@@ -86,6 +88,7 @@ pub mod xwu {
     }
 
     #[repr(C)]
+    #[derive(Debug, Clone, Copy, Default)]
     pub struct RectSizeType {
         x: CoordType,
         y: CoordType,
@@ -94,6 +97,7 @@ pub mod xwu {
     }
 
     #[repr(C)]
+    #[derive(Debug, Clone, Copy, Default)]
     pub struct BoxType {
         left: CoordType,
         top: CoordType,
@@ -101,6 +105,8 @@ pub mod xwu {
         bottom: CoordType,
     }
 
+    #[repr(C)]
+    #[derive(Debug, Clone, Copy)]
     pub struct Obj {
         oid: IObjType,
         obj: u64,
@@ -127,25 +133,73 @@ pub mod xwu {
 
         pub fn get_width(&self) -> CoordType {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::Width, ptr!(res), &default()); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::Width, ptr!(res), &Default::default()); }
             res
         }
 
         pub fn get_height(&self) -> CoordType {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::Height, ptr!(res), &default()); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::Height, ptr!(res), &Default::default()); }
             res
         }
 
         pub fn get_x(&self) -> CoordType {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::X, ptr!(res), &default()); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::X, ptr!(res), &Default::default()); }
             res
         }
 
         pub fn get_y(&self) -> CoordType {
             let mut res = 0;
-            unsafe { obj_get_attr(self.obj, ObjAttr::Y, ptr!(res), &default()); }
+            unsafe { obj_get_attr(self.obj, ObjAttr::Y, ptr!(res), &Default::default()); }
+            res
+        }
+
+        pub fn get_coords(&self) -> RectType {
+            let mut res: RectType = Default::default();
+            unsafe { obj_get_attr(self.obj, ObjAttr::Coords, ptr!(res), &Default::default()); }
+            res
+        }
+
+        pub fn get_ori_coords(&self) -> RectType {
+            let mut res: RectType = Default::default();
+            unsafe { obj_get_attr(self.obj, ObjAttr::OriCoords, ptr!(res), &Default::default()); }
+            res
+        }
+
+        pub fn get_rect(&self) -> RectType {
+            let mut res: RectType = Default::default();
+            unsafe { obj_get_attr(self.obj, ObjAttr::Rect, ptr!(res), &Default::default()); }
+            res
+        }
+
+        pub fn get_scroll_coords(&self) -> RectType {
+            let mut res: RectType = Default::default();
+            unsafe { obj_get_attr(self.obj, ObjAttr::ScrollCoords, ptr!(res), &Default::default()); }
+            res
+        }
+
+        pub fn get_scroll_left(&self) -> CoordType {
+            let mut res = 0;
+            unsafe { obj_get_attr(self.obj, ObjAttr::ScrollLeft, ptr!(res), &Default::default()); }
+            res
+        }
+
+        pub fn get_scroll_top(&self) -> CoordType {
+            let mut res = 0;
+            unsafe { obj_get_attr(self.obj, ObjAttr::ScrollTop, ptr!(res), &Default::default()); }
+            res
+        }
+
+        pub fn get_scroll_right(&self) -> CoordType {
+            let mut res = 0;
+            unsafe { obj_get_attr(self.obj, ObjAttr::ScrollRight, ptr!(res), &Default::default()); }
+            res
+        }
+
+        pub fn get_scroll_bottom(&self) -> CoordType {
+            let mut res = 0;
+            unsafe { obj_get_attr(self.obj, ObjAttr::ScrollBottom, ptr!(res), &Default::default()); }
             res
         }
 
@@ -172,13 +226,48 @@ pub mod xwu {
                 obj_set_attr(self.obj, ObjAttr::Y, null_mut(), ptr!([y, ]));
             }
         }
+
+        pub fn set_coords(&self, coords: RectType) {
+            unsafe {
+                obj_set_attr(self.obj, ObjAttr::Coords, null_mut(), ptr!([coords, ]));
+            }
+        }
+
+        pub fn set_scroll_left(&self, left: CoordType) {
+            unsafe {
+                obj_set_attr(self.obj, ObjAttr::ScrollLeft, null_mut(), ptr!([left, ]));
+            }
+        }
+
+        pub fn set_scroll_top(&self, top: CoordType) {
+            unsafe {
+                obj_set_attr(self.obj, ObjAttr::ScrollTop, null_mut(), ptr!([top, ]));
+            }
+        }
+
+        pub fn set_scroll_right(&self, right: CoordType) {
+            unsafe {
+                obj_set_attr(self.obj, ObjAttr::ScrollRight, null_mut(), ptr!([right, ]));
+            }
+        }
+
+        pub fn set_scroll_bottom(&self, bottom: CoordType) {
+            unsafe {
+                obj_set_attr(self.obj, ObjAttr::ScrollBottom, null_mut(), ptr!([bottom, ]));
+            }
+        }
+
+        pub fn set_scroll_coords(&self, coords: RectType) {
+            unsafe {
+                obj_set_attr(self.obj, ObjAttr::ScrollCoords, null_mut(), ptr!([coords, ]));
+            }
+        }
     }
-}
 
 
-pub mod log {
-    #[macro_export]
-    macro_rules! print {
+    pub mod log {
+        #[macro_export]
+        macro_rules! print {
         ($arg:tt) => {{
             unsafe { _debug($arg.as_ptr(), $arg.len()) }
         }};
@@ -188,16 +277,16 @@ pub mod log {
         }}
     }
 
-    #[macro_export]
-    macro_rules! println {
+        #[macro_export]
+        macro_rules! println {
         ($($arg:tt)*) => {{
             print!($($arg)*);
             unsafe { _debug("\n".as_ptr(), 1) }
         }}
     }
 
-    #[macro_export]
-    macro_rules! log {
+        #[macro_export]
+        macro_rules! log {
         ($arg:tt) => {{
             unsafe { log_print($arg.as_ptr(), $arg.len()) }
         }};
@@ -206,20 +295,21 @@ pub mod log {
             unsafe { log_print(s.as_ptr(), s.len()) }
         }}
     }
-}
+    }
 
-pub mod utils {
-    #[macro_export]
-    macro_rules! ptr {
+    pub mod utils {
+        #[macro_export]
+        macro_rules! ptr {
         ($p:expr) => { (&mut $p as * mut _ as * mut u8) };
     }
-}
+    }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
+    #[cfg(test)]
+    mod tests {
+        #[test]
+        fn it_works() {
+            let result = 2 + 2;
+            assert_eq!(result, 4);
+        }
     }
 }
